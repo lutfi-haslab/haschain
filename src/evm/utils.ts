@@ -63,6 +63,15 @@ export function addressFromHash(hash: Hash): Address {
   return hash.slice(-20);
 }
 
+// Create an address from a hex string
+export function addressFromHex(hex: string): Address {
+  const bytes = hexToBytes(hex);
+  if (bytes.length !== 20) {
+    throw new Error('Invalid address length: expected 20 bytes');
+  }
+  return bytes;
+}
+
 // Generate a contract address from sender and nonce
 export function generateContractAddress(sender: Address, nonce: bigint): Address {
   // Create the RLP encoded data (simplified version)
