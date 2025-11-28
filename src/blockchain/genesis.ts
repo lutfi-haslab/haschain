@@ -41,13 +41,13 @@ export function createDefaultGenesisConfig(validators: string[]): GenesisConfig 
 export function createTestGenesisConfig(): GenesisConfig {
   const alloc = new Map<Address, { balance: bigint; nonce?: bigint; code?: Uint8Array; storage?: Map<string, bigint> }>();
   
-  // Test accounts (these are the first 20 bytes of keccak256 of "test", "user1", "user2", etc.)
+  // Test accounts (20 bytes = 40 hex chars)
   const testAccounts = [
     '0x2c5367a7a2558c48f8fc7a7c6c8a7a7a7a7a7a7a',
     '0x5a4a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a',
-    '0x7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b',
-    '0x8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c',
-    '0x9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d'
+    '0x7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b',
+    '0x8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c',
+    '0x9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d'
   ];
 
   // Fund test accounts
@@ -97,10 +97,10 @@ export function createDevGenesisConfig(validatorAddress?: string): GenesisConfig
     nonce: 0n
   });
 
-  // Add some test accounts
+  // Add some test accounts (20 bytes = 40 hex chars)
   const testAccounts = [
-    '0x2c5367a7a2558c48f8fc7a7c6c8a7a7a7a7a7a7a7a',
-    '0x5a4a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a'
+    '0x2c5367a7a2558c48f8fc7a7c6c8a7a7a7a7a7a7a',
+    '0x5a4a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a'
   ];
 
   testAccounts.forEach(address => {

@@ -48,10 +48,10 @@ async function runBlockchainDemo(): Promise<void> {
     console.log(`  Validators: ${info.validators.length}`);
     console.log(`  Pending Transactions: ${info.txPoolStats.pending}`);
 
-    // Create a few test transactions
-    const sender1 = addressFromHex('0x1111111111111111111111111111111111111111111111111111111');
-    const sender2 = addressFromHex('0x2222222222222222222222222222222222222222222222222222222');
-    const receiver = addressFromHex('0x3333333333333333333333333333333333333333333333333333333');
+    // Create a few test transactions (addresses must be 20 bytes = 40 hex chars)
+    const sender1 = addressFromHex('0x1111111111111111111111111111111111111111');
+    const sender2 = addressFromHex('0x2222222222222222222222222222222222222222');
+    const receiver = addressFromHex('0x3333333333333333333333333333333333333333');
 
     // Add transactions to pool
     console.log('📝 Adding test transactions...');
@@ -127,7 +127,7 @@ async function runBlockchainDemo(): Promise<void> {
     // Test adding/removing validators
     console.log('🔧 Testing validator management...');
     
-    const newValidator = addressFromHex('0x4444444444444444444444444444444444444444444444444444444444444444444');
+    const newValidator = addressFromHex('0x4444444444444444444444444444444444444444');
     
     try {
       manager.addValidator(newValidator);

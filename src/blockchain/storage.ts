@@ -57,9 +57,24 @@ export class BlockchainStorage {
       const blockHash = bytesToHex(calculateBlockHash(block));
       const blockNumber = block.header.number.toString();
 
+      // Serialize header with Uint8Array fields converted to arrays
+      const serializedHeader = {
+        parentHash: Array.from(block.header.parentHash),
+        number: block.header.number.toString(),
+        timestamp: block.header.timestamp.toString(),
+        stateRoot: Array.from(block.header.stateRoot),
+        transactionsRoot: Array.from(block.header.transactionsRoot),
+        receiptsRoot: Array.from(block.header.receiptsRoot),
+        validator: Array.from(block.header.validator),
+        signature: Array.from(block.header.signature),
+        gasLimit: block.header.gasLimit.toString(),
+        gasUsed: block.header.gasUsed.toString(),
+        extraData: Array.from(block.header.extraData)
+      };
+
       // Store block data as JSON string
       const blockJson = JSON.stringify({
-        header: block.header,
+        header: serializedHeader,
         transactions: block.transactions.map(tx => ({
           from: tx.from ? Array.from(tx.from) : null,
           to: tx.to ? Array.from(tx.to) : null,
@@ -75,20 +90,19 @@ export class BlockchainStorage {
       await this.db.put(`blockByNumber:${blockNumber}`, blockHash);
 
       // Store block header separately for quick access
-      const headerJson = JSON.stringify(block.header);
+      const headerJson = JSON.stringify(serializedHeader);
       await this.db.put(`header:${blockHash}`, headerJson);
 
-      // Store block metadata
-      const metadata: BlockMetadata = {
+      // Store block metadata (convert bigints to strings for JSON)
+      const metadataJson = JSON.stringify({
         hash: blockHash,
-        number: block.header.number,
+        number: block.header.number.toString(),
         parentHash: bytesToHex(block.header.parentHash),
-        timestamp: block.header.timestamp,
+        timestamp: block.header.timestamp.toString(),
         transactionCount: block.transactions.length,
-        gasUsed: block.header.gasUsed,
-        gasLimit: block.header.gasLimit
-      };
-      const metadataJson = JSON.stringify(metadata);
+        gasUsed: block.header.gasUsed.toString(),
+        gasLimit: block.header.gasLimit.toString()
+      });
       await this.db.put(`metadata:${blockHash}`, metadataJson);
 
       // Update chain tip
@@ -127,8 +141,23 @@ export class BlockchainStorage {
       const blockJson = await this.db.get(`block:${hash}`);
       const blockData = JSON.parse(blockJson);
       
+      // Deserialize header with arrays converted back to Uint8Array
+      const header = {
+        parentHash: new Uint8Array(blockData.header.parentHash),
+        number: BigInt(blockData.header.number),
+        timestamp: BigInt(blockData.header.timestamp),
+        stateRoot: new Uint8Array(blockData.header.stateRoot),
+        transactionsRoot: new Uint8Array(blockData.header.transactionsRoot),
+        receiptsRoot: new Uint8Array(blockData.header.receiptsRoot),
+        validator: new Uint8Array(blockData.header.validator),
+        signature: new Uint8Array(blockData.header.signature),
+        gasLimit: BigInt(blockData.header.gasLimit),
+        gasUsed: BigInt(blockData.header.gasUsed),
+        extraData: new Uint8Array(blockData.header.extraData)
+      };
+
       return {
-        header: blockData.header,
+        header,
         transactions: blockData.transactions.map((txData: any) => ({
           from: txData.from ? new Uint8Array(txData.from) : null,
           to: txData.to ? new Uint8Array(txData.to) : null,
@@ -164,7 +193,21 @@ export class BlockchainStorage {
   async getBlockHeader(hash: string): Promise<BlockHeader | null> {
     try {
       const headerJson = await this.db.get(`header:${hash}`);
-      return JSON.parse(headerJson) as BlockHeader;
+      const headerData = JSON.parse(headerJson);
+      
+      return {
+        parentHash: new Uint8Array(headerData.parentHash),
+        number: BigInt(headerData.number),
+        timestamp: BigInt(headerData.timestamp),
+        stateRoot: new Uint8Array(headerData.stateRoot),
+        transactionsRoot: new Uint8Array(headerData.transactionsRoot),
+        receiptsRoot: new Uint8Array(headerData.receiptsRoot),
+        validator: new Uint8Array(headerData.validator),
+        signature: new Uint8Array(headerData.signature),
+        gasLimit: BigInt(headerData.gasLimit),
+        gasUsed: BigInt(headerData.gasUsed),
+        extraData: new Uint8Array(headerData.extraData)
+      };
     } catch (error: any) {
       if (error.code === 'LEVEL_NOT_FOUND') {
         return null;
@@ -177,7 +220,16 @@ export class BlockchainStorage {
   async getBlockMetadata(hash: string): Promise<BlockMetadata | null> {
     try {
       const metadataJson = await this.db.get(`metadata:${hash}`);
-      return JSON.parse(metadataJson) as BlockMetadata;
+      const data = JSON.parse(metadataJson);
+      return {
+        hash: data.hash,
+        number: BigInt(data.number),
+        parentHash: data.parentHash,
+        timestamp: BigInt(data.timestamp),
+        transactionCount: data.transactionCount,
+        gasUsed: BigInt(data.gasUsed),
+        gasLimit: BigInt(data.gasLimit)
+      };
     } catch (error: any) {
       if (error.code === 'LEVEL_NOT_FOUND') {
         return null;
@@ -190,6 +242,9 @@ export class BlockchainStorage {
   async getChainTip(): Promise<Block | null> {
     try {
       const tipHash = await this.db.get('chainTip');
+      if (!tipHash || tipHash === 'undefined') {
+        return null;
+      }
       return this.getBlock(tipHash);
     } catch (error: any) {
       if (error.code === 'LEVEL_NOT_FOUND') {

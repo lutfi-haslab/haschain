@@ -34,8 +34,8 @@ export class BlockchainManager {
     // Initialize storage
     this.storage = new BlockchainStorage(config.storage);
     
-    // Initialize world state (using LevelDB implementation)
-    this.worldState = new LevelDBWorldState(config.storage.dbPath);
+    // Initialize world state (using LevelDB implementation with separate path)
+    this.worldState = new LevelDBWorldState(config.storage.dbPath + '-state');
     
     // Initialize consensus
     this.consensus = new PoAConsensus(config.blockchain);
@@ -79,10 +79,20 @@ export class BlockchainManager {
       
       // Get or create genesis block
       let genesisBlock = await this.storage.getChainTip();
+      
       if (!genesisBlock) {
         // Create new genesis block
         genesisBlock = this.createGenesisBlock(config);
         await this.storage.storeBlock(genesisBlock);
+      }
+      
+      // Initialize validators from genesis config
+      for (const validator of config.config.validators) {
+        try {
+          this.consensus.addValidator(validator);
+        } catch (e) {
+          // Validator might already exist from config
+        }
       }
       
       // Update consensus state
