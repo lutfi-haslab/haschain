@@ -4,7 +4,7 @@
 export * as EVM from './evm/index.js';
 
 // Export blockchain components
-export * as Blockchain from './blockchain/index.js';
+export * as Blockchain from './blockchain/index';
 
 // Export consensus components
 export * as Consensus from './consensus/poa.js';
