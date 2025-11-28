@@ -10,7 +10,7 @@ async function runBlockchainDemo(): Promise<void> {
     // Create blockchain manager
     const manager = new BlockchainManager({
       storage: {
-        dbPath: './demo-chaindb',
+        dbPath: './leveldb/demo-chain',
         createIfMissing: true,
         errorIfExists: false
       },

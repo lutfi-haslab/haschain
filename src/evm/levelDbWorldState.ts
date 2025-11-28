@@ -15,7 +15,7 @@ export class LevelDBWorldState implements IWorldState {
   private storageCache: Map<string, Map<string, Word>> = new Map();
   private initialized: boolean = false;
 
-  constructor(dbPath: string = './chaindb') {
+  constructor(dbPath: string = './leveldb/chaindb') {
     this.db = new Level(dbPath, { 
       valueEncoding: 'binary',
       keyEncoding: 'utf8'
